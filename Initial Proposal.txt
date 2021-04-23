@@ -1,0 +1,19 @@
+Timeline: 14 weeks
+
+APPROVAL:
+   Pitch:
+   My (Mark Tobler's) for my CSE 499 senior project, I am thinking about  creating an online dashboard of information, or SPA web app, that brings together sizable amounts of water usage data from at least two main sources: a water usage meter and a smart irrigation controller. This information would be retrieved, scrubbed, processed for reporting, and then analyzed for leaks. The goals of the Water Conservation Dashboard are 1) to reduce overall water usage through educating the user on their water usage over time and 2) to identify and monitor water leaks from their earliest detectable stages.
+
+   The reporting would include usage over time per water zone (I currently have 16 active water zones, though it could be any number up to, say, 256). Drill down into different time units by zone or irrigation usage overall: hour, day, week, month, and year. The goal is to make this user and smart irrigation controller independent, As I only know of one meter product that supports a user accessible API, it would be tied to a Flume Water Meter.
+
+   Technologies include Node.js, Postgres, Python & Pandas for data synchronization, scrubbing, and analysis, ES6/Javascript for front end logic (haven't decided on a framework, though one of these: angular, vue, react, or ember). This would all run on Heroku using a free dyno but kept current (and readily accessible without the 30 second spin up) using a Postman monitor.
+
+   Concerns over this project that it might be of narrow applicability could be valid. This is an area of personal interest encompassing both water conservation, gardening, and landscaping. The idea would be to encapsulate and abstract user info retrieval and processing so multiple smart irrigation platforms would be plug-n-play.
+
+   I am ready to do a deep dive into the proposal if you approve this. I'd love to chat with you when possible.
+   Thank you!
+
+WEEK 2 - PROPOSAL
+WEEK 4 - SPED TALK!!!
+WEEK 7 - REQUIREMENTS
+WEEK 14 - PASS OFF AND GRADING
