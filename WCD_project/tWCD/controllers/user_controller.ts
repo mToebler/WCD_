@@ -4,7 +4,7 @@ import { UserService } from "../services/user_service";
 import { UserValidatorGuard } from "../guards/user_validator_guard";
 import { PlaceHolderGuard } from "../guards/place_holder_guard";
 
-
+// TODO: This whole class needs a shield for authentication
 export class UserController extends Controller {
    // A default worker adds the route "/" & the http method "GET" 
    /*  
@@ -74,5 +74,52 @@ export class UserController extends Controller {
          return textResult("invalid user");
       }
    }
+
+
+   @Worker(HTTP_METHOD.Delete)
+   @Route("/del") // full path: {host}/user/1?id={id}
+   async removeByQueryString(@Singleton(UserService) service) {
+      // taking id from query string
+      const userId = Number(this.query.id);
+      const user = service.getUser(userId);
+      if (user != null) {
+         service.removeUser(userId);
+         return textResult("user deleted");
+      } else {
+         return textResult("invalid user", 404);
+      }
+   }
+
+   @Worker(HTTP_METHOD.Delete)
+   @Route("/{id}")
+   async removeByRoute(@Singleton(UserService) service) {
+      // taking id from route
+      const userId = Number(this.param.id);
+
+      const user = service.getUser(userId);
+      if (user != null) {
+         service.removeUser(userId);
+         return textResult("user deleted");
+      } else {
+         return textResult("invalid user");
+      }
+   }
+
+   // RETRIEVING A USER: GET
+   @Worker(HTTP_METHOD.Get)
+   @Route("/{id}")
+   async retrieveByRoute(@Singleton(UserService) service) {
+      // taking id from route
+      const userId = Number(this.param.id);
+
+      const user = service.getUser(userId);
+      if (user != null) {
+         return jsonResult(user, HTTP_STATUS_CODE.Ok);
+         // return textResult("user deleted");
+      } else {
+         return textResult("invalid user", HTTP_STATUS_CODE.NotFound);
+      }
+   }
+
 
 }

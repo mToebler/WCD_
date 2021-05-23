@@ -12,6 +12,8 @@ const store = {
    }]
 }
 
+
+// NOTE:- UserService is instantiated as a Singleton
 export class UserService {
    getUsers() {
       return store.users;
