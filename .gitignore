@@ -1,3 +1,5 @@
 .DS_Store
 WCD_project/my-new-app/.gitignore
 WCD_project/my-new-app/.babelrc
+WCD_project/tWCD/secrets.ts
+.gitignore
