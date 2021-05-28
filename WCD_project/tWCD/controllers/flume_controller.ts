@@ -5,18 +5,20 @@ import { FlumeService } from "../services/flume_service";
 export class FlumeController extends Controller {
 
     @DefaultWorker()
-    async getFlume(service: FlumeService) {
+    async initFlume(service: FlumeService) {
+        console.log('\n\ninitFlume fired!');
         let flume = new FlumeService();
-        return flume.flume_init();
+        return flume;
     }
 
     @Worker(HTTP_METHOD.Post)
     @Route("/")
     // @Guards(UserValidatorGuard)
-    async addUser(service: FlumeService) {
+    async getFlume(service: FlumeService) {
        // remember that data travels around with posts
+       console.log('\n\ngetFlume fired!');
         let flume = new FlumeService();
-        return flume.flume_init();
+        return flume;
     }
  
 

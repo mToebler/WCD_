@@ -4,6 +4,7 @@ import { request } from "http";
 // const json = require('json');
 // const https = require('https');
 const fetch = require('node-fetch');
+const jwt = require('jsonwebtoken');
 import { secrets } from "../secrets";
 
 /*
@@ -11,15 +12,17 @@ import { secrets } from "../secrets";
    pulls from "secrets.ts" 
 */
 export class FlumeService {
+   private DEBUG = true;
 
    protected path_base: string;
    protected access_token: string;
    protected payload: {};
+   protected _flume_keys: any;
 
    constructor() {
       this.payload = {
          method: 'POST',
-         headers: {Accept: 'application/json', 'Content-Type': 'application/json'},         
+         headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
          body: JSON.stringify({
             grant_type: "password",
             client_id: secrets.flume_keys.flume_client_id,
@@ -29,45 +32,146 @@ export class FlumeService {
          })
       };
       this.access_token = "";
-      //_flume_keys = deepcopy(flume_keys) //turn f_keys into a class
-      // TODO:You got tired. You need to continue the stateful initilization of the flume object.
+      this._flume_keys = JSON.parse(JSON.stringify(secrets.flume_keys)); //turn f_keys into a class
+      // TODO: Got tired. You need to continue the stateful initilization of the flume object.
       this.path_base = "https://api.flumewater.com";
       // initlialize this instance
       this.flume_init();
    }
-   
-   flume_init() {
+
+   public flume_init() {
       let url = this.path_base + "/oauth/token";
       // headers = {"Content-Type": "application/json"};
-      fetch(url, this.payload)
+      // WORKING
+      // let response = fetch(url, this.payload)
+      //    .then(res => res.json())
+      //    .then(json => console.log(json))
+      //    .catch(err => console.error('error' + err));
+
+      let response = fetch(url, this.payload)
          .then(res => res.json())
-         .then(json => console.log(json))
+         // .then(parsed => console.log(parsed))
+         .then(parsed => parsed["data"][0]["access_token"])
+         // .then(parsed => console.log(parsed))
+         .then(access_token => this.parse_access_token(access_token))
+         // need to take the decoded from above and get device_id
+         // .then(keys => console.log("flume_init: userID: ", keys["user_id"]), )
+
+         .then(keys => this.processUserDeviceId(keys["user_id"]))
+
+         .then(keys => console.log("flume_init: deviceID: ", keys["device_id"]))
+
          .catch(err => console.error('error' + err));
-      // https.request();
-      // let response = HttpRequest.request("POST", url);
-   }
+
       /*
-   let response = http.requests.request("POST", url, 
-                               json=self.payload, headers=self.getHeaders());
-   
-   parsed = json.loads(response.text)
-   # print(json.dumps(parsed, indent=2))
-   # print(type(parsed))
-   self.access_token = parsed["data"][0]["access_token"]
-   # print(access_token.pop().get("access_token"))
-   # print(access_token)
-   # the access_token is a base64 encoded string. It contains userID. Grab it.
-   self._f_keys.update({"user_id" : self.getUserId(self.access_token)})
-   # save this for later.
-   self._f_keys.update({"access_token" : self.access_token})
-   # access_token += '=' * (-len(access_token) % 4)  # add padding
-   # access_payload = json.loads(base64.b64decode(access_token).decode("utf-8"))
-   print(self._f_keys["user_id"])
-   self._f_keys.update({"device_id" : self.getUserDeviceId(self._f_keys["user_id"])})
-   print(self._f_keys["device_id"])
+      
+            let parsed = JSON.parse(response.text);
+            // print(json.dumps(parsed, indent=2));
+            // print(type(parsed));
+            this.access_token = parsed["data"][0]["access_token"];
+            // print(access_token.pop().get("access_token"));
+            // print(access_token);
+            // the access_token is a base64 encoded string. It contains userID. Grab it.;
+            this._flume_keys.user_id = this.getUserId(this.access_token);
+            // save this for later.;
+            this._flume_keys.access_token = this.access_token;
+            // self._f_keys.update({ "access_token": self.access_token })
+            // access_token += '=' * (-len(access_token) % 4);  // add padding
+            // access_payload = json.loads(base64.b64decode(access_token).decode("utf-8"))
+            console.log("flume_init: ", this._flume_keys["user_id"]);
+      
+            this._flume_keys.device_id =
+               this._flume_keys.device_id = this.processUserDeviceId(this._flume_keys["user_id"]);
+            console.log("flume_init: devideID:", this._flume_keys["device_id"]);
+         */
    }
-   
-*/
+
+   private parse_access_token(access_token) {
+      this.access_token = access_token;
+      if (this.DEBUG) console.log('parse_access_token: this.access_token:', this.access_token);
+      this._flume_keys.user_id = this.getUserId(this.access_token);
+      if (this.DEBUG) console.log('parse_access_token: this._flume_keys.user_id:', this._flume_keys.user_id);
+      this._flume_keys.access_token = this.access_token;
+      return this._flume_keys;
+   }
+
+   private handleUserDeviceId(user_id) {
+      this._flume_keys.device_id = this.processUserDeviceId(user_id);
+      return this._flume_keys.device_id;
+   }
+
+
+   /*
+      GET USER ID 
+      Flume access tokens last a week? It seems. 
+        Takes a Flume request response
+        Returns session userId
+   */
+   private getUserId(res) {
+      if (this.DEBUG) console.log('getUserId: res:', res);
+      //currently a byte string. Need dictionary. chain pile ...
+      // let jwt_obj = JSON.parse(String(this.getJWTTokenPayload(res), "utf-8"));
+      let jwt_obj = this.getJWTTokenPayload(res);
+
+      return jwt_obj.user_id;
+   }
+
+   /*
+     READ JWT TOKEN PAYLOAD
+       Takes an JWT Auth token
+       Returns the decoded payload, byte array
+   */
+   private getJWTTokenPayload(token) {
+      // 00101110 = '.'
+      let decoded = jwt.decode(token);
+      // if (this.DEBUG) console.log('\n0: ', decoded);
+      // let base64Url = token.split('.')[1];
+      // if (this.DEBUG) console.log('\n1: ', base64Url);
+      // let buffer = Buffer.from(base64Url, "utf-8");
+      // if (this.DEBUG) console.log('\n2: ', buffer.toString('base64'));
+      // // let delim: string = b'.';// String.toString('b' + '.', "utf-8");
+      // // just swallowing crypto portion of list
+      // let temp[signing_input, crypto_segment] = token.rsplit(delim, 1)
+      // // same with headers, swallowing
+      // header_segment, payload_segment = signing_input.split(delim, 1)    
+      // let decodedValue = JSON.parse(buffer.toString('base64'));
+      // console.log('getJWTTokenPayLoad\n: ');
+      if (this.DEBUG) console.log(`\n\ngetJWTTokenPayload:\n ${token}  \nconverted to Base64 is: \n`, decoded);
+      return decoded;
+   }
+
+   /*
+   # GET USER DEVICE ID 
+   #   Takes a user id 
+   #   Returns a device id
+   */
+   private processUserDeviceId(userId) {
+      let deviceId : string;
+      if (this.DEBUG) console.log("processUserDeviceId: using id: ", userId);
+      this.makeFlumeRequest(`users/${userId}/devices`)
+         // .then(text => console.log("\nprocessUserDeviceId: ", text))
+         .then(res => res.json())
+         .then(json => json["data"][0]["id"]) //console.log('\n\ndeviceId', json["data"][0]["id"]))
+         .then(deviceId => this.assignDeviceId(deviceId))         
+         // .then(text => console.log("\nprocessUserDeviceId: ", text))
+      //(let loaded = text)
+         .catch(err => console.error('error' + err));
+      // let res = this.makeFlumeRequest(`users/${userId}/devices`);
+      // if (this.DEBUG) console.log("processUserDeviceId:
+      //NOTE: these need to be implemented
+      // let loaded = JSON.parse(res.text);
+
+      // return loaded["data"][0]["id"];
+      return deviceId;
+
+   }
+
+   private assignDeviceId(id) {
+      this._flume_keys.device_id = id;
+      if (this.DEBUG) console.log('\n\ndeviceId', this._flume_keys.device_id);
+      return this._flume_keys.device_id;
+   }
+
 
    /*
        MAKE FLUME REQUEST
@@ -77,22 +181,44 @@ export class FlumeService {
          Takes a RESTful path
          Returns response
     */
-   
-   // makeFlumeRequest(rest_path: string, method = "GET", params = undefined) {
-   //    // NOTE: this is a STUB
-   //    const heading = document.querySelector('h1');
-   //    this.checkToken();
-   //    let url = "https://api.flumewater.com/" + rest_path;
-   //    if (params == undefined) {
-   //       return requests.request(method, url,
-   //          headers = self.getHeaders())
-   //    }
-   //    else {
-   //       dumped = json.dumps(params)
-   //       return requests.request(method, url, data = dumped,
-   //          headers = self.getHeaders())
-   //    }
-   // }
+   public makeFlumeRequest(rest_path: string, method = "GET", params = undefined) {
+      // NOTE: this is a STUB      
+      this.checkToken();
+      let url = "https://api.flumewater.com/" + rest_path;
+      if (typeof params === 'undefined') {
+         if (this.DEBUG) console.log('makeFlumeReq: making request from ', url);
+
+         return fetch(url, this.getHeaders(method));
+         // return requests.request(method, url, this.getHeaders());
+      }
+      else {
+         let dumped = JSON.stringify(params)
+         return fetch(method, url, { data: dumped, headers: this.getHeaders() });
+         // return requests.request(method, url, data = dumped,
+         // headers = this.getHeaders())
+      }
+   }
+
+   /*
+      GET HEADERS
+         Takes a dictionary or uses the keys in secrets
+         Returns a dictionary of request headers 
+  */
+   private getHeaders(means?) {
+      // default header
+      // let header = { "Content-Type": "application/json" };
+      if (typeof means === 'undefined') means = 'GET';
+      let header = { "Accept": "application/json" };
+      // and if we've auth'd
+      if (typeof this._flume_keys.access_token !== 'undefined') {
+         header["Authorization"] = `Bearer ${this._flume_keys.access_token}`;
+      }
+      let method = { "method": means, "headers": header};
+      if (this.DEBUG) console.log('getHeaders: returning', method);
+      return method;
+   }
+
+
 
    /*
    CHECK TOKEN
@@ -100,8 +226,7 @@ export class FlumeService {
    TODO:
      Returns nothing. Should update member _f_keys
    */
-   // checkToken() {
-   //    continue;
-
-   // }
+   checkToken() {
+      return undefined;
+   }
 }
