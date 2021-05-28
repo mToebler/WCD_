@@ -5,6 +5,7 @@ import { request } from "http";
 // const https = require('https');
 const fetch = require('node-fetch');
 const jwt = require('jsonwebtoken');
+const date = require('date-and-time');
 import { secrets } from "../secrets";
 
 /*
@@ -57,10 +58,7 @@ export class FlumeService {
          // need to take the decoded from above and get device_id
          // .then(keys => console.log("flume_init: userID: ", keys["user_id"]), )
 
-         .then(keys => this.processUserDeviceId(keys["user_id"]))
-
-         .then(keys => console.log("flume_init: deviceID: ", keys["device_id"]))
-
+         .then(keys => this.processUserDeviceId(keys["user_id"]))         
          .catch(err => console.error('error' + err));
 
       /*
@@ -193,7 +191,7 @@ export class FlumeService {
       }
       else {
          let dumped = JSON.stringify(params)
-         return fetch(method, url, { data: dumped, headers: this.getHeaders() });
+         return fetch(url, { data: dumped, headers: this.getHeaders(method) });
          // return requests.request(method, url, data = dumped,
          // headers = this.getHeaders())
       }
@@ -229,4 +227,48 @@ export class FlumeService {
    checkToken() {
       return undefined;
    }
+
+
+/*
+      QUERY FLUME BY DATE
+      Makes a simple time interval query for water usage
+         Takes a date
+         Returns a pandas series of usage covering 20 hours
+*/
+   queryFlumeByDate(day: Date) {
+      //  let dayn20H: date;
+      let dayn20H = date.addHours(day, (-19));
+      let queries = {
+            queries: [
+                {
+                bucket: "MIN",
+                since_datetime:  day.toISOString().slice(0, 19).replace("T", " "), //day.strftime("%Y-%m-%d %H:%M:%S"),
+                until_datetime: dayn20H.toISOString().slice(0, 19).replace("T", " "),
+                // "since_datetime": "2020-11-03 12:00:00",
+                // "until_datetime": "2020-11-03 23:59:59",
+                //# %a%b%d ~ MonJuly30
+                request_id: day.toISOString()
+                }
+            ]
+      };
+      
+      this.makeFlumeRequest(`users/${this._flume_keys['user_id']}/devices/${this._flume_keys['device_id']}/query`,"POST", queries)
+      .then(res => JSON.parse(res.text))
+      .then(loaded => console.log('queryFlumeByDate: result', loaded))
+      .catch(err => console.error('\n\nqueryFlumeByDate: error' + err));
+/*
+        let res = this.makeFlumeRequest(`users/${this._flume_keys['user_id']}/devices/${this._flume_keys['device_id']}/query`,"POST", queries);
+        loaded = json.parse(res.text)
+        print(loaded)
+        # print(loaded["data"][0]["NovWeek1_2020"])
+        flu_df = pd.DataFrame(loaded["data"][0][day.strftime("%a%b%d")])
+        flu_df.to_csv("nov_19_flume.csv", index = False)
+        
+        return flu_df
+        # for m in loaded["data"][0][day.strftime("%a%b%d")]:
+        #     print(m)            
+        # print(flu_df.head(60))        
+        */
+      }
+
 }

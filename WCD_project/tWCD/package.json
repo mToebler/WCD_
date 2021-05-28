@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/ujjwalguptaofficial/fortjs-typescript-starter#readme",
   "dependencies": {
+    "date-and-time": "^1.0.0",
     "fortjs": "^2.0.0",
     "jsonwebtoken": "^8.5.1",
     "node-fetch": "^2.6.1"
