@@ -56,9 +56,7 @@ export class FlumeService {
          // .then(parsed => console.log(parsed))
          .then(access_token => this.parse_access_token(access_token))
          // need to take the decoded from above and get device_id
-         // .then(keys => console.log("flume_init: userID: ", keys["user_id"]), )
-         /// NOTE: rollback to here if cb fails
-         // .then(keys => this.processUserDeviceId(keys["user_id"]))
+         /// using callback to get most recent data
          .then(keys => this.processUserDeviceId(keys["user_id"], this.queryFlumeByDate))
          // .then(value => this.queryRecentFlume())
          .catch(err => console.error('error' + err));
@@ -147,18 +145,6 @@ export class FlumeService {
    private getJWTTokenPayload(token) {
       // 00101110 = '.'
       let decoded = jwt.decode(token);
-      // if (this.DEBUG) console.log('\n0: ', decoded);
-      // let base64Url = token.split('.')[1];
-      // if (this.DEBUG) console.log('\n1: ', base64Url);
-      // let buffer = Buffer.from(base64Url, "utf-8");
-      // if (this.DEBUG) console.log('\n2: ', buffer.toString('base64'));
-      // // let delim: string = b'.';// String.toString('b' + '.', "utf-8");
-      // // just swallowing crypto portion of list
-      // let temp[signing_input, crypto_segment] = token.rsplit(delim, 1)
-      // // same with headers, swallowing
-      // header_segment, payload_segment = signing_input.split(delim, 1)    
-      // let decodedValue = JSON.parse(buffer.toString('base64'));
-      // console.log('getJWTTokenPayLoad\n: ');
       if (this.DEBUG) console.log(`\n\ngetJWTTokenPayload:\n ${token}  \nconverted to Base64 is: \n`, decoded);
       return decoded;
    }
