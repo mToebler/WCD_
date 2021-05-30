@@ -15,13 +15,13 @@ Water Conservation Dashboard!
 6. Synchronized data can be viewed by different time units (Hour, Day, Month).  
 ***Completed:*** Functionality showcased
 ## Stretch Goals (not finalized):
-1. System parses data to find possible leaks.
+1. System parses data to find possible leaks.  
 ***Completed:*** Using historical and current data, confirmation of leak events can be made. This will require outside verification, but full transparency of the identifying code is available for review.
-2. Water conservation tips based upon usage and soil metadata will be available. This will involve a verification survey of the soil type, area, sun exposure and crop type.
+2. Water conservation tips based upon usage and soil metadata will be available. This will involve a verification survey of the soil type, area, sun exposure and crop type.  
 ***Completed:*** Functionality showcased
-3. UI will be organized in a modular, configurable fashion
+3. UI will be organized in a modular, configurable fashion  
 ***Completed:*** Functionality showcased
-4. User will be able to control irrigation from system
+4. User will be able to control irrigation from system  
 ***Completed:*** Functionality showcased and verified through video/visual confirmation.
-5. Soak/Cycling will be available to configure within irrigation areas.
+5. Soak/Cycling will be available to configure within irrigation areas.  
 ***Completed:*** Functionality showcased and verified through video/visual confirmation and historical data.
