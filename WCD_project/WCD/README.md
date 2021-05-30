@@ -1,5 +1,5 @@
 # WCD
-Water Conservation Dashboard!
+## Water Conservation Dashboard!
 
 ## Proposed Requirements (not finalized):
 1. User registers services and creates login credentials.  
