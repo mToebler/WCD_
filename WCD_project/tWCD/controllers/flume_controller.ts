@@ -1,5 +1,6 @@
 
-import { Controller, DefaultWorker, Worker, textResult, HTTP_METHOD, Route } from "fortjs";
+import { Guards, Controller, DefaultWorker, Worker, textResult, HTTP_METHOD, Route } from "fortjs";
+import { FlumeValidatorGuard } from "../guards/flume_validator_guard";
 import { FlumeService } from "../services/flume_service";
 
 export class FlumeController extends Controller {
@@ -14,14 +15,29 @@ export class FlumeController extends Controller {
 
     @Worker(HTTP_METHOD.Post)
     @Route("/")
-    // @Guards(UserValidatorGuard)
+    @Guards(FlumeValidatorGuard)
     async getFlume(service: FlumeService) {
         // remember that data travels around with posts
         console.log('\n\ngetFlume fired!');
-        if (typeof this.flume === 'undefined') this.initFlume(this.flume);
-        // return flume;
         let day = new Date();
-        return this.flume.queryFlumeByDate(day);
+        let payload: any;        
+        if (false && typeof this.flume === 'undefined') {
+            this.initFlume(this.flume)
+                .then(flumeInstance => {
+                    if (flumeInstance.DEBUG) console.log('getFlume: Starting queryFlumeByDate\n');
+                    flumeInstance.queryFlumeByDate(day, this.flume)
+                })
+                .then(data => { payload = data; return payload})
+                .catch(err => console.error('\n\ngetFlume: Error!: ', err));
+        }
+        if (typeof this.flume === 'undefined') {
+            this.flume = await this.initFlume(this.flume);
+            if (this.flume.DEBUG) console.log('getFlume: Starting queryFlumeByDate\n');
+            payload = await this.flume.queryFlumeByDate(day, this.flume);
+            if (this.flume.DEBUG) console.log('getFlume: payload: ', payload);
+                
+        }
+        // return flume;
     }
 
 
