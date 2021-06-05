@@ -9,6 +9,11 @@ const date = require('date-and-time');
 import { secrets } from "../secrets";
 const RachioClient = require('rachio');
 const DEBUG = true;
+
+
+const zoneCache = {
+   zones: []
+}
 /*
    All about the RachioService class
 */
@@ -25,7 +30,6 @@ export class RachioService {
       
    }
 
-   
 
    getRachioDevices() {
       if (DEBUG) console.log('getRachioDevices: client: ', this.rachioClient);
@@ -86,8 +90,46 @@ export class RachioService {
          .catch(err => console.log('getRachioForecastDay Error: ', err));
    }
    
+   getRachioZones(id) {
+      this.rachioClient.getZonesByDevice(secrets.device_ID)
+         .then(zones => {
+            console.log(`Zones: `, zones)
+            return zones;
+         })
+         .catch(err => console.log('getRachioZones', err));
+   }
 
+   getRachioZone(zoneId) {
+      this.rachioClient.getZone(zoneId)
+         .then(zone => {
+            console.log(`Zone: `, zone);
+            return zone;
+         })
+         .catch(err => console.log('getRachioZone', err));
+   }
 
+   getRachioByNumber(number) {      
+      this.rachioClient.getDevice(secrets.device_ID)
+         .then(device => device.getZones())
+         .then(zones => {
+            zones.forEach(zone => {
+               let newZone = {
+                  name: zone.name,
+                  number: zone.zoneNumber,
+                  id: zone.id,
+                  image: zone.imageUrl,
+                  lastWatered: zone.lastWateredDate
+               };
+               zoneCache.zones.push(newZone);
+               console.log('getRachioByNumber: caching zone: ', newZone);
+            });
+            // return new Promise((resolve, reject) =>
+            return zoneCache.zones.find(zone => zone.nubmer == number);
+         })
+         .catch(err => console.log('getRachioByNumber', err));
+          
+      // console.log(`${zone.name} : ${zone.zoneNumber} : ${zone.enabled} : ${zone.id}`)));
+   }
 
 
 }

@@ -63,6 +63,34 @@ export class RachioController extends Controller {
         return jsonResult(service.getRachioForecastDay(this.param.day));         
     }
 
+    @Worker(HTTP_METHOD.Get)
+    @Guards(RachioGuard)
+    @Route('/device/{id}/zones')        
+    async getZones(@Singleton(RachioService) service) {
+        // swallowing id
+        return jsonResult(service.getRachioZones(this.param.id));         
+    }
+
+    //zoneId in this case is the unique 30ish hex id from 
+    @Worker(HTTP_METHOD.Get)
+    @Guards(RachioGuard)
+    @Route('/device/{id}/zone/{zoneId}')        
+    async getZoneById(@Singleton(RachioService) service) {
+        // swallowing id
+        return jsonResult(service.getRachioZone(this.param.zoneId));         
+    }
+
+    @Worker(HTTP_METHOD.Get)
+    @Guards(RachioGuard)
+    @Route('/device/{id}/zone/number/{number}')        
+    async getZoneByNumber(@Singleton(RachioService) service) {
+        // swallowing id        
+        return jsonResult(service.getRachioByNumber(this.param.number));        
+    }
+
+
+
+    
 
 
 }
