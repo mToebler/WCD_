@@ -88,6 +88,22 @@ export class RachioController extends Controller {
         return jsonResult(service.getRachioByNumber(this.param.number));        
     }
 
+    @Worker(HTTP_METHOD.Get)
+    @Guards(RachioGuard)
+    @Route('/device/{id}/is_watering')        
+    async isWatering(@Singleton(RachioService) service) {
+        // swallowing id        
+        return jsonResult(service.isRachioWatering(this.param.id));        
+    }
+
+    @Worker(HTTP_METHOD.Get)
+    @Guards(RachioGuard)
+    @Route('/events')        
+    async getEvents(@Singleton(RachioService) service) {
+        // swallowing id        
+        return jsonResult(service.getRachioEvents(null, null, {}));
+    }
+
 
 
     

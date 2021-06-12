@@ -131,5 +131,38 @@ export class RachioService {
       // console.log(`${zone.name} : ${zone.zoneNumber} : ${zone.enabled} : ${zone.id}`)));
    }
 
+   isRachioWatering(id) {
+      return this.rachioClient.isWatering(secrets.device_ID);
+   }
+
+   // only one month of retrieval is allowed
+   getRachioEvents(startTime: Date, endTime: Date, filters = {}) {
+      const MONTH = 2678400000; // 31 days in Milliseconds
+      if (startTime == null)         
+         startTime = new Date(Date.now() - (MONTH));
+      if (endTime == null)
+         endTime = new Date(startTime.getTime() + MONTH);
+      
+      let startTimeMS = startTime.getTime();
+      let endTimeMS = endTime.getTime();
+      if (DEBUG) console.log('getRachioEvents: startTimeMS: ', startTimeMS, ' endTimeMS: ', endTimeMS);
+      if (endTimeMS - startTimeMS > MONTH) {
+         return Promise.reject(new Error('Range cannot exceed 31 days'));
+      }
+      
+      filters = {
+         // category: 'DEVICE',
+         // type: 'RAIN_DELAY',
+         subType: 'ZONE_COMPLETED',
+         type: 'ZONE_STATUS',
+         topic: "WATERING"
+      };
+      // this.rachioClient.getDeviceEvents(secrets.device_ID, startTime, endTime, filters)
+      this.rachioClient.getDeviceEvents(secrets.device_ID, startTimeMS, endTimeMS, filters)
+         .then(events => events.forEach(e => console.log(e.toPlainObject())));
+         // .then(response => console.log(response));
+   }
+   
+
 
 }

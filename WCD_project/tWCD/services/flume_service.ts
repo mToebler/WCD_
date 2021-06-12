@@ -339,4 +339,40 @@ export class FlumeService {
               */
    }
 
+
+   /*
+         QUERY FLUME BY DATE
+         Makes a simple time interval query for water usage
+            Takes a date
+            Returns a pandas series of usage covering 20 hours
+   */
+  queryFlumeByDateRange(startTime: Date, endTime: Date, that: FlumeService) {
+   //  let dayn20H: date;
+   // let dayn20H = date.addHours(day, (-2));
+   // let dayN19H = date.setHours(day.getHours()-19);
+   let queries = {
+      queries: [
+         {
+            bucket: "MIN",
+            since_datetime: startTime.toISOString().slice(0, 19).replace("T", " "), //day.strftime("%Y-%m-%d %H:%M:%S"),
+            until_datetime: endTime.toISOString().slice(0, 19).replace("T", " "),
+            // "since_datetime": "2020-11-03 12:00:00",
+            // "until_datetime": "2020-11-03 23:59:59",
+            //# %a%b%d ~ MonJuly30
+            request_id: startTime.toISOString()
+         }
+      ]
+   };
+
+   // that.makeFlumeRequest(`users/${that._flume_keys['user_id']}/devices/${that._flume_keys['device_id']}/query`, "POST", queries)
+   that.makeFlumePost(`users/${that._flume_keys['user_id']}/devices/${that._flume_keys['device_id']}/query`, queries)
+      .then(res => res.json())
+      .then(res => console.log(res.data[0]))
+      // .then(res => JSON.parse(res.text))
+      // .then(loaded => { console.log('queryFlumeByDate: result', loaded); return loaded })
+      .catch(err => console.error('\n\nqueryFlumeByDate: error' + err));
+ 
+}
+
+
 }

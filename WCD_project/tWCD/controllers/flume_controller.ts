@@ -40,5 +40,25 @@ export class FlumeController extends Controller {
         // return flume;
     }
 
+    // @Worker(HTTP_METHOD.Get)
+    // @Route("/range/{start}/{end}")
+    // @Guards(FlumeValidatorGuard)
+    // async getFlumeUseByRange(service: FlumeService) {
+    //     const HOUR = 3600000;
+    //     const startTime = new Date(this.param.start);
+    //     const endTime = new Date(this.param.end);
+    //     if (this.flume.DEBUG) console.log('getFlumeUseByRange: start: ', startTime, ' end: ', endTime, ' difference: ', endTime.getTime() - startTime.getTime(), ' limit: ', HOUR * 20);
+    //     let payload: any;
+    //     if (endTime.getTime() - startTime.getTime() < HOUR * 20) {         
+    //         payload = await this.flume.queryFlumeByDateRange(startTime, endTime, this.flume);
+    //         if (this.flume.DEBUG) console.log('getFlume: payload: ', payload);
+    //     } else {
+    //         console.log('getFlumeUseByRange: time range cannot be more than 20 hours.');
+    //     }
+
+        
+    // }
+    
+
 
 }
