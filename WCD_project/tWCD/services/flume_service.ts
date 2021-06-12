@@ -339,7 +339,12 @@ export class FlumeService {
               */
    }
 
-
+   // Flume takes times in PST. Racchio in GMT
+   queryFlumeByRangeAdjusted(startTime: Date, endTime: Date, that: FlumeService) {      
+      const adjustedStart = date.addHours(startTime, (-7));
+      const adjustedEnd = date.addHours(endTime, (-7));
+      this.queryFlumeByDateRange(adjustedStart, adjustedEnd, that);
+   }
    /*
          QUERY FLUME BY DATE
          Makes a simple time interval query for water usage

@@ -161,8 +161,8 @@ export class RachioService {
       };
       // this.rachioClient.getDeviceEvents(secrets.device_ID, startTime, endTime, filters)
       this.rachioClient.getDeviceEvents(secrets.device_ID, startTimeMS, endTimeMS, filters)
-         .then(events => events.forEach(e => console.log(e.toPlainObject())));
-         // .then(response => console.log(response));
+         // .then(events => events.forEach(e => console.log(e.toPlainObject())));
+         .then(response => console.log(response));
    }
    
 

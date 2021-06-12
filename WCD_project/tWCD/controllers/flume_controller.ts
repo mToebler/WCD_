@@ -39,7 +39,8 @@ export class FlumeController extends Controller {
         }
         // return flume;
     }
-
+    // 17 minutes 6-10-21 from 9:17pm
+    // /flume/range/1623359866000/1623360886000
     @Worker(HTTP_METHOD.Get)
     @Route("/range/{start}/{end}")
     @Guards(FlumeValidatorGuard)
@@ -51,7 +52,8 @@ export class FlumeController extends Controller {
             console.log('getFlumeUseByRange: param start: ', parseInt(this.param.start), ' start: ', startTime, ' end: ', endTime, ' difference: ', endTime.getTime() - startTime.getTime(), ' limit: ', HOUR * 20);
         let payload: any;
         if (endTime.getTime() - startTime.getTime() < HOUR * 20) {         
-            payload = await service.queryFlumeByDateRange(startTime, endTime, this.flume);
+            // payload = await service.queryFlumeByDateRange(startTime, endTime, this.flume);
+            payload = await service.queryFlumeByRangeAdjusted(startTime, endTime, this.flume);
             if (service.DEBUG) console.log('getFlume: payload: ', payload);
         } else {
             console.log('getFlumeUseByRange: time range cannot be more than 20 hours.');

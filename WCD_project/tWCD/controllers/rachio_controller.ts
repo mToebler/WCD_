@@ -98,10 +98,15 @@ export class RachioController extends Controller {
 
     @Worker(HTTP_METHOD.Get)
     @Guards(RachioGuard)
-    @Route('/events')        
+    @Route('/events/range/{start}/{end}')        
     async getEvents(@Singleton(RachioService) service) {
-        // swallowing id        
-        return jsonResult(service.getRachioEvents(null, null, {}));
+        let startTime: Date = null;        
+        let endTime: Date = null;
+        if (parseInt(this.param.start) > 0)
+            startTime = new Date(parseInt(this.param.start));
+        if (parseInt(this.param.end) > 0)
+            endTime = new Date(parseInt(this.param.end));
+        return jsonResult(service.getRachioEvents(startTime, endTime, {}));
     }
 
 
