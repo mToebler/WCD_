@@ -6,6 +6,7 @@ import { request } from "http";
 const fetch = require('node-fetch');
 const jwt = require('jsonwebtoken');
 const date = require('date-and-time');
+const DEBUG = true;
 import { secrets } from "../secrets";
 
 /*
@@ -13,7 +14,6 @@ import { secrets } from "../secrets";
    pulls from "secrets.ts" 
 */
 export class FlumeService {
-   public DEBUG = true;
 
    protected path_base: string;
    protected access_token: string;
@@ -100,7 +100,7 @@ export class FlumeService {
             }
          ]
       };
-      if (this.DEBUG) console.log('queryRecentFlume: starting makeFlumeRequest!\n');
+      if (DEBUG) console.log('queryRecentFlume: starting makeFlumeRequest!\n');
       this.makeFlumeRequest(`users/${this._flume_keys['user_id']}/devices/${this._flume_keys['device_id']}/query`, "POST", queries)
          .then(res => JSON.parse(res.text))
          .then(loaded => { console.log('queryFlumeByDate: result', loaded); return loaded })
@@ -109,9 +109,9 @@ export class FlumeService {
 
    private parse_access_token(access_token) {
       this.access_token = access_token;
-      if (this.DEBUG) console.log('parse_access_token: this.access_token:', this.access_token);
+      if (DEBUG) console.log('parse_access_token: this.access_token:', this.access_token);
       this._flume_keys.user_id = this.getUserId(this.access_token);
-      if (this.DEBUG) console.log('parse_access_token: this._flume_keys.user_id:', this._flume_keys.user_id);
+      if (DEBUG) console.log('parse_access_token: this._flume_keys.user_id:', this._flume_keys.user_id);
       this._flume_keys.access_token = this.access_token;
       return this._flume_keys;
    }
@@ -129,7 +129,7 @@ export class FlumeService {
         Returns session userId
    */
    private getUserId(res) {
-      if (this.DEBUG) console.log('getUserId: res:', res);
+      if (DEBUG) console.log('getUserId: res:', res);
       //currently a byte string. Need dictionary. chain pile ...
       // let jwt_obj = JSON.parse(String(this.getJWTTokenPayload(res), "utf-8"));
       let jwt_obj = this.getJWTTokenPayload(res);
@@ -145,7 +145,7 @@ export class FlumeService {
    private getJWTTokenPayload(token) {
       // 00101110 = '.'
       let decoded = jwt.decode(token);
-      if (this.DEBUG) console.log(`\n\ngetJWTTokenPayload:\n ${token}  \nconverted to Base64 is: \n`, decoded);
+      if (DEBUG) console.log(`\n\ngetJWTTokenPayload:\n ${token}  \nconverted to Base64 is: \n`, decoded);
       return decoded;
    }
 
@@ -156,7 +156,7 @@ export class FlumeService {
    */
    private processUserDeviceId(userId, cb?: Function) {
       let deviceId: string;
-      if (this.DEBUG) console.log("processUserDeviceId: using id: ", userId, "\ncb is:", cb);
+      if (DEBUG) console.log("processUserDeviceId: using id: ", userId, "\ncb is:", cb);
       if (typeof cb === 'undefined') {
          console.log('processUserDeviceId: In if.');
          this.makeFlumeRequest(`users/${userId}/devices`)
@@ -192,7 +192,7 @@ export class FlumeService {
 
    private assignDeviceId(id) {
       this._flume_keys.device_id = id;
-      if (this.DEBUG) console.log('\n\ndeviceId', this._flume_keys.device_id);
+      if (DEBUG) console.log('\n\ndeviceId', this._flume_keys.device_id);
       return this._flume_keys.device_id;
    }
 
@@ -210,7 +210,7 @@ export class FlumeService {
       this.checkToken();
       let url = "https://api.flumewater.com/" + rest_path;
       if (typeof params === 'undefined') {
-         if (this.DEBUG) console.log('makeFlumeReq: making request from ', url);
+         if (DEBUG) console.log('makeFlumeReq: making request from ', url);
 
          return fetch(url, this.getHeaders(method));
          // return requests.request(method, url, this.getHeaders());
@@ -219,7 +219,7 @@ export class FlumeService {
          // let body = JSON.stringify(params);
          // if (this.DEBUG) console.log('makeFlumeReq: body is: ', body);
          let options = this.getHeaders(method, params);
-         if (this.DEBUG) console.log('makeFlumeReq: making request from ', url, '\n\t', { options });
+         if (DEBUG) console.log('makeFlumeReq: making request from ', url, '\n\t', { options });
          return fetch(url, { data: this.getHeaders(method) });
          // return fetch(url, { method: method, body: this.getBody(params), data: options, });
          // return requests.request(method, url, data = dumped,
@@ -231,7 +231,7 @@ export class FlumeService {
       let url = "https://api.flumewater.com/" + rest_path;
       let headersData = this.getSimpleHeader();
       let bodyData = this.getBody(params);
-      if (this.DEBUG) console.log('makeFlumePost: making request from ', url, '\nheaders: ', headersData,
+      if (DEBUG) console.log('makeFlumePost: making request from ', url, '\nheaders: ', headersData,
          '\nbody: ', bodyData);
       return fetch(url, {
          method: 'POST',
@@ -365,9 +365,13 @@ export class FlumeService {
    };
 
    // that.makeFlumeRequest(`users/${that._flume_keys['user_id']}/devices/${that._flume_keys['device_id']}/query`, "POST", queries)
-   that.makeFlumePost(`users/${that._flume_keys['user_id']}/devices/${that._flume_keys['device_id']}/query`, queries)
+   this.makeFlumePost(`users/${this._flume_keys['user_id']}/devices/${this._flume_keys['device_id']}/query`, queries)
       .then(res => res.json())
-      .then(res => console.log(res.data[0]))
+      // .then(res => console.log(res.data[0]))
+      .then(res => Object.values(res.data[0]).forEach(e=> console.log(e)))
+      // .then(res => res.map(e => {
+      //    console.log(e)
+      // }))
       // .then(res => JSON.parse(res.text))
       // .then(loaded => { console.log('queryFlumeByDate: result', loaded); return loaded })
       .catch(err => console.error('\n\nqueryFlumeByDate: error' + err));

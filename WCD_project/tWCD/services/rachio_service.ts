@@ -136,6 +136,8 @@ export class RachioService {
    }
 
    // only one month of retrieval is allowed
+   // NOTE: Rachio reports time in GMT in eventDate. Flume reports time for PDT. 
+   // This means Flume needs 7 hours removed from MS time to sync up with rachio.
    getRachioEvents(startTime: Date, endTime: Date, filters = {}) {
       const MONTH = 2678400000; // 31 days in Milliseconds
       if (startTime == null)         
